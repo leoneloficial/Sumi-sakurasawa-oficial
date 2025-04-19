@@ -46,7 +46,7 @@ global.yukiJadibts = true
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
 global.packname = '⪛✰ 𝐘𝐮𝐤𝐢-𝐒𝐮𝐨𝐮-𝐁𝐨𝐭 ✰⪜'
-global.botname = 'ᥡᥙkі-sᥙ᥆ᥙ-ᑲ᥆𝗍'
+global.botname = 'ᯓ᮫݃͜ᮨ🌸ܾ݉ᢥsᥙmі sᥲkᥙrᥲsᥲᥕᥲ ꪃꒉܻᵃₚͬ៰'
 global.wm = ''
 global.author = 'Made By ৎ୭࠭͢𓆩𝕷͢𝖊𝖔፝֟፝֟፝֟፝֟፝֟፝֟𝖓𝖊𝖑𓆪'
 global.dev = '© ⍴᥆ᥕᥱrᥱძ ᑲᥡ ৎ୭࠭͢𓆩𝕷͢𝖊𝖔፝֟፝֟፝֟፝֟፝֟፝֟𝖓𝖊𝖑𓆪'
