@@ -1,65 +1,43 @@
-import FormData from "form-data"
-import fetch from "node-fetch"
+import uploadImage from '../lib/uploadImage.js'
+import fetch from 'node-fetch'
 
-const handler = async (m, { conn, usedPrefix, command }) => {
+export const handler = async (m, { conn, usedPrefix, command }) => {
+  // Se intenta detectar la imagen: si el mensaje es una respuesta, se toma m.quoted;
+  // de lo contrario, se toma el propio mensaje m.
+  const msgData = m.quoted || m
+  
+  // Verificar si existe el mimetype y que sea una imagen (JPG o PNG).
+  // Algunos bots pueden tener el mimetype directamente en msgData
+  const mime = msgData.mimetype || (msgData.msg ? msgData.msg.mimetype : '')
+  if (!mime || !/image\/(jpe?g|png)/.test(mime)) {
+    throw `✳️ Debes enviar o responder a una imagen válida (JPG/PNG) con: ${usedPrefix + command}`
+  }
+
+  // Descargar los datos de la imagen
+  const imageData = await msgData.download()
+  if (!imageData) throw "❌ No se pudo descargar la imagen."
+
+  // Subir la imagen a un servidor para obtener una URL pública
+  const imageUrl = await uploadImage(imageData)
+
+  // Construir la URL de la API codificando el parámetro de la imagen
+  const apiUrl = `https://api.siputzx.my.id/api/iloveimg/upscale?image=${encodeURIComponent(imageUrl)}`
+
+  // Se envía una reacción (por ejemplo, "procesando")
+  await conn.sendMessage(m.chat, { react: { text: '🔄', key: m.key } })
+
   try {
-    let q = m.quoted ? m.quoted : m
-    let mime = (q.msg || q).mimetype || q.mediaType || ""
-
-    if (!mime) {
-      return m.reply(`❀ Por favor, envie una imagen o responda a la imagen utilizando el comando.`)
-    }
-
-    if (!/image\/(jpe?g|png)/.test(mime)) {
-      return m.reply(`✧ El formato del archivo (${mime}) no es compatible, envía o responde a una imagen.`)
-    }
-
-    conn.reply(m.chat, '❍ Mejorando la calidad de la imagen....', m)
-    let img = await q.download()
-    let url = await enhanceImage(img)
-    await conn.sendFile(m.chat, url, "out.png", "", fkontak)
-  } catch (error) {
-    return conn.reply(m.chat, `⚠︎ Ocurrió un error: ${error.message}`, m)
+    // Se envía la imagen procesada por la API
+    await conn.sendMessage(m.chat, {
+      image: { url: apiUrl },
+      caption: `🛠️ *HD Completado*\n\nTu imagen se ha mejorado con éxito.`
+    }, { quoted: m })
+    // Reacción final de confirmación
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
+  } catch (err) {
+    throw `❌ Error al procesar la imagen.\n\n${err}`
   }
 }
 
-handler.help = ["hd"]
-handler.tags = ["tools"]
-handler.command = ["remini", "hd", "enhance"]
-handler.group = true
-
+handler.command = /^hd$/i
 export default handler
-
-async function enhanceImage(imageData) {
-  try {
-    const formData = new FormData()
-    formData.append("image", Buffer.from(imageData), {
-      filename: "enhance_image_body.jpg",
-      contentType: "image/jpeg"
-    })
-
-    const response = await fetch(
-      "https://inferenceengine.vyro.ai/enhance.vyro",
-      {
-        method: "POST",
-        body: formData,
-        headers: {
-          ...formData.getHeaders()
-        }
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(
-        `Error al procesar la imagen: ${response.status} - ${response.statusText}`
-      )
-    }
-
-    const result = await response.buffer()
-    return result
-  } catch (error) {
-    throw new Error(
-      `Error al mejorar la calidad de la imagen: ${error.message}`
-    )
-  }
-}
