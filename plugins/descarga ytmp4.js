@@ -16,7 +16,8 @@ let handler = async (m, { conn, text, usedPrefix, command, args }) => {
     let limit = 10485760;
     let size = await getSize(json.url);
 
-    const cap = `*「✦」 : ${json.title}*\n> 🜸  URL : ${args[0]}\n> ❒ Peso: ${await formatSize(size) || "Desconocido"}`;
+    const cap = `*「✦」 : ${json.title}*\
+n> ❒ Peso: ${await formatSize(size) || "Desconocido"}\n> 🜸  URL : ${args[0]}`;
 
     conn.sendFile(m.chat, await (await fetch(json.url)).buffer(), `${json.title}.mp4`, cap, m, null, { asDocument: true, mimetype: "video/mp4" })
 
