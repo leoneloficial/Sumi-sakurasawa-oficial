@@ -1,134 +1,103 @@
-import ffmpeg from 'fluent-ffmpeg';
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
-import fetch from 'node-fetch'; 
+import fetch from "node-fetch"
+import yts from 'yt-search'
+import axios from "axios"
 
-let handler = async(m, { conn, text, args }) => {
-    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/(?:v|e(?:mbed)?)\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})|(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/;
-    if (!text || !youtubeRegex.test(text)) {
-        return conn.reply(m.chat, `🌱 Ejemplo:\nytmp3 https://youtube.com/watch?v=DLh9mnfZvc0\n\n≡ Para descargar como documento agregue "--doc" al final. Ejemplo:\n\nytmp3 <url> --doc`, m);
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+  try {
+    if (!text.trim()) {
+      return conn.reply(m.chat, `❀ Ingrese el nombre de la música que quieres descargar.`, m)
     }
-    try {
-        m.react('⏳');        
-        const search = await yts(args[0]); 
-        let isDoc = /--doc|doc$/.test(text);
-        const video = search.videos[0];       
-        if (!video.url) return conn.reply(m.chat, `No se encontró el video.`, m);
-        const mp3Response = await (await fetch(`https://api.vreden.my.id/api/ytmp3?url=${video.url}`)).json();
-        if (!mp3Response || !mp3Response.result || !mp3Response.result.download || !mp3Response.result.download.url) {
-            return conn.reply(m.chat, `No se pudo obtener el enlace de descarga del audio. La API no respondió correctamente.`, m);
-        }
-        const mp3 = mp3Response.result.download; 
-        let file = await process(mp3.url, "mp3");
-        let cap = `
-\`\`\`
-⊜─⌈ 📻 ◜YouTube MP3◞ 📻 ⌋─⊜
 
-≡ 🎵 Título : ${video.title}
-≡ 📺 Canal : ${video.author.name}
-≡ ⏳ Duración : ${video.timestamp}
-≡ 👀 Vistas : ${video.views.toLocaleString()}
-≡ 📅 Publicado : ${video.ago}
-≡ 🔗 Enlace : ${video.url}
-≡ 🌳 Calidad : 320kbps
-\`\`\`
-≡ Enviado como : ${isDoc ? "Documento" : "Audio"}
-`;
-        conn.sendFile(m.chat, file.path, `${video.title}.mp3`, cap, m, null, {
-            asDocument: isDoc ? true : false,
-            mimetype: "audio/mpeg"
-        });
-await fs.promises.unlink(file.path)
-        m.react('✅');
-    } catch (error) {
-        console.error(error); 
-        return conn.reply(m.chat, `Error al descargar el audio.\n\n` + error, m);
+    const search = await yts(text)
+    if (!search.all || search.all.length === 0) {
+      return m.reply('✧ No se encontraron resultados para tu búsqueda.')
     }
-};
 
-handler.command = ["yta", "ytmp3", "ytmp3doc"];
-handler.help = ["ytmp3"];
-handler.tags = ["dl"];
-handler.diamond = 2;
-export default handler;
+    const videoInfo = search.all[0]
+    if (!videoInfo) {
+      return m.reply('✧ No se pudo obtener información del video.')
+    }
 
-const dir = "./downloads";
-if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    const { title, thumbnail, timestamp, views, ago, url, author } = videoInfo
 
-function info(url) {
-    return new Promise((res, rej) => {
-        ffmpeg.ffprobe(url, (err, meta) => {
-            if (err) return rej(err);
+    if (!title || !thumbnail || !timestamp || !views || !ago || !url || !author) {
+      return m.reply('✧ Información incompleta del video.')
+    }
 
-            const fmt = meta.format;
-            const dur = fmt.duration ? fmt.duration : 0;
-            const min = Math.floor(dur / 60);
-            const sec = Math.floor(dur % 60);
-            const durFmt = `${min}:${sec < 10 ? '0' : ''}${sec} m`;
-            let q = "Unknown";
-            let br = 0;
-            if (meta.streams) {
-                const vid = meta.streams.find(s => s.codec_type === 'video');
-                const aud = meta.streams.find(s => s.codec_type === 'audio');
+    const vistas = formatViews(views)
+    const canal = author.name ? author.name : 'Desconocido'
+    const infoMessage = `「✦」Descargando *<${title || 'Desconocido'}>*\n\n> ✦ Canal » *${canal}*\n> ✰ Vistas » *${vistas || 'Desconocido'}*\n> ⴵ Duración » *${timestamp || 'Desconocido'}*\n> ✐ Publicación » *${ago || 'Desconocido'}*\n> 🜸 Link » ${url}`
 
-                if (vid) {
-                    q = `${vid.height}p`;
-                } else if (aud && aud.bit_rate) {
-                    br = Math.floor(aud.bit_rate / 1000);
-                    q = `${br}kbps`;
-                }
-            }
-            res({ q, br, dur: durFmt });
-        });
-    });
-}
-function convertToAudio(url, out) {
-    return new Promise((res, rej) => {
-        ffmpeg(url)
-            .audioCodec('libmp3lame')
-            .audioBitrate('320k')
-            .audioChannels(2)
-            .audioFrequency(44100)
-            .save(out)
-            .on('end', () => res(fs.statSync(out).size))
-            .on('error', rej);
-    });
-}
-function convertToVideo(url, out) {
-    return new Promise((res, rej) => {
-        ffmpeg(url)
-            .videoCodec('libx264')
-            .videoBitrate('5000k')
-            .size('1920x1080')
-            .outputOptions('-crf 18')
-            .audioCodec('aac')
-            .audioBitrate('192k')
-            .audioChannels(2)
-            .save(out)
-            .on('end', () => res(fs.statSync(out).size))
-            .on('error', rej);
-    });
-}
-async function process(url, format) {
-    const before = await info(url);
-    const name = crypto.randomBytes(2).toString('hex');
-    let file;
-    if (format === 'mp3') {
-        file = path.join(dir, name + '.mp3');
-        await convertToAudio(url, file);
-    } else if (format === 'mp4') {
-        file = path.join(dir, name + '.mp4');
-        await convertToVideo(url, file);
+    const thumb = (await conn.getFile(thumbnail))?.data
+
+    const JT = {
+      contextInfo: {
+        externalAdReply: {
+          title: botname,
+          body: dev,
+          mediaType: 1,
+          previewType: 0,
+          mediaUrl: url,
+          sourceUrl: url,
+          thumbnail: thumb,
+          renderLargerThumbnail: true,
+        },
+      },
+    }
+
+    await conn.reply(m.chat, infoMessage, m, JT)
+
+    if (command === 'play' || command === 'yta' || command === 'ytmp3') {
+      try {
+        const api = await (await fetch(`https://api.vreden.my.id/api/ytmp3?url=${url}`)).json()
+        const resulta = api.result
+        const result = resulta.download.url
+
+        if (!result) throw new Error('⚠ El enlace de audio no se generó correctamente.')
+
+        await conn.sendMessage(m.chat, { audio: { url: result }, fileName: `${api.result.title}.mp3`, mimetype: 'audio/mpeg' }, { quoted: m })
+      } catch (e) {
+        return conn.reply(m.chat, '⚠︎ No se pudo enviar el audio. Esto puede deberse a que el archivo es demasiado pesado o a un error en la generación de la URL. Por favor, intenta nuevamente más tarde.', m)
+      }
+    } else if (command === 'play2' || command === 'ytv' || command === 'ytmp4') {
+      try {
+        const response = await fetch(`https://api.vreden.my.id/api/ytmp4?url=${url}`)
+        const json = await response.json()
+        const resultad = json.result
+        const resultado = resultad.download.url
+
+        if (!resultad || !resultado) throw new Error('⚠ El enlace de video no se generó correctamente.')
+
+        await conn.sendMessage(m.chat, { video: { url: resultado }, fileName: resultad.title, mimetype: 'video/mp4', caption: title }, { quoted: m })
+      } catch (e) {
+        return conn.reply(m.chat, '⚠︎ No se pudo enviar el video. Esto puede deberse a que el archivo es demasiado pesado o a un error en la generación de la URL. Por favor, intenta nuevamente más tarde.', m)
+      }
     } else {
-        throw new Error('Unsupported format');
+      return conn.reply(m.chat, '✧︎ Comando no reconocido.', m)
     }
-    const after = await info(file);
-    const size = fs.statSync(file).size;
-    return {
-        before: before.q,
-        after: after.q,
-        size: `${(size / 1024 / 1024).toFixed(2)} MB`,
-        path: file
-    };
+
+  } catch (error) {
+    return m.reply(`⚠︎ Ocurrió un error: ${error}`)
+  }
+}
+
+handler.command = handler.help = ['yta', 'ytmp3',]
+handler.tags = ['descargas']
+handler.group = true
+
+export default handler
+
+function formatViews(views) {
+  if (views === undefined) {
+    return "No disponible"
+  }
+
+  if (views >= 1_000_000_000) {
+    return `${(views / 1_000_000_000).toFixed(1)}B (${views.toLocaleString()})`
+  } else if (views >= 1_000_000) {
+    return `${(views / 1_000_000).toFixed(1)}M (${views.toLocaleString()})`
+  } else if (views >= 1_000) {
+    return `${(views / 1_000).toFixed(1)}k (${views.toLocaleString()})`
+  }
+  return views.toString()
 }
