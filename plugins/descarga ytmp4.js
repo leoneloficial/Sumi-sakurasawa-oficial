@@ -11,7 +11,7 @@ let handler = async (m, { conn, text, usedPrefix, command, args }) => {
       return m.reply(`Enalce inválido`);
     }
 
-    m.react('🕒');
+    m.react('🌸');
     let json = await ytdl(args[0]);
     let limit = 10485760;
     let size = await getSize(json.url);
