@@ -4,7 +4,7 @@ import axios from 'axios';
 let handler = async (m, { conn, text, usedPrefix, command, args }) => {
   try {
     if (!text) {
-      return conn.reply(m.chat, `🌱 Ejemplo de uso: ytv https://youtube.com/watch?v=Hx920thF8X4`, m);
+      return conn.reply(m.chat, `❀ Ejemplo de uso: ytv https://youtube.com/watch?v=Hx920thF8X4`, m);
     }
 
     if (!/^(?:https?:\/\/)?(?:www\.|m\.|music\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_]+)\&?/.test(args[0])) {
