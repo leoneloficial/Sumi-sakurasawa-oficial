@@ -27,15 +27,15 @@ const handler = async (m, { isPrems, conn }) => {
 
   const texto = `
 ╭━〔 Cσϝɾҽ Aʅҽαƚσɾισ 〕⬣
-┃📦 *Obtienes Un Cofre*
+┃❒ *Obtienes Un Cofre*
 ┃ ¡Felicidades!
 ╰━━━━━━━━━━━━⬣
 
 ╭━〔 Nυҽʋσʂ Rҽƈυɾʂσʂ 〕⬣
-┃ *${dia} ${moneda}* 💸
-┃ *${tok} Tokens* ⚜️
-┃ *${ai} Diamantes* 💎
-┃ *${expp} Exp* ✨
+┃ *${dia} ${moneda}* ⛀
+┃ *${tok} Tokens* ❖
+┃ *${ai} Diamantes* ✦
+┃ *${expp} Exp* ✰
 ╰━━━━━━━━━━━━⬣`;
 
   try {
