@@ -10,7 +10,7 @@ export const handler = async (m, { conn, usedPrefix, command }) => {
   // Algunos bots pueden tener el mimetype directamente en msgData
   const mime = msgData.mimetype || (msgData.msg ? msgData.msg.mimetype : '')
   if (!mime || !/image\/(jpe?g|png)/.test(mime)) {
-    throw `✳️ Debes enviar o responder a una imagen válida (JPG/PNG) con: ${usedPrefix + command}`
+    throw `❀ Debes enviar o responder a una imagen válida (JPG/PNG) con: ${usedPrefix + command}`
   }
 
   // Descargar los datos de la imagen
@@ -24,16 +24,16 @@ export const handler = async (m, { conn, usedPrefix, command }) => {
   const apiUrl = `https://api.siputzx.my.id/api/iloveimg/upscale?image=${encodeURIComponent(imageUrl)}`
 
   // Se envía una reacción (por ejemplo, "procesando")
-  await conn.sendMessage(m.chat, { react: { text: '🔄', key: m.key } })
+  await conn.sendMessage(m.chat, { react: { text: '⌛', key: m.key } })
 
   try {
     // Se envía la imagen procesada por la API
     await conn.sendMessage(m.chat, {
       image: { url: apiUrl },
-      caption: `🛠️ *HD Completado*\n\nTu imagen se ha mejorado con éxito.`
+      caption: `*「✦」 HD Completado*\n\n❀ Tu imagen se ha mejorado con éxito.`
     }, { quoted: m })
     // Reacción final de confirmación
-    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
+    await conn.sendMessage(m.chat, { react: { text: '🧧', key: m.key } })
   } catch (err) {
     throw `❌ Error al procesar la imagen.\n\n${err}`
   }
