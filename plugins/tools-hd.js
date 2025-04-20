@@ -39,5 +39,5 @@ export const handler = async (m, { conn, usedPrefix, command }) => {
   }
 }
 
-handler.command = /^hd$/i
+handler.command = ["remini", "hd", "enhance"];
 export default handler
