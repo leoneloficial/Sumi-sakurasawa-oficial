@@ -52,7 +52,8 @@ let handler = async (m, { conn: _envio, command, usedPrefix, args, text, isOwner
 
             const replyMessage = users.length === 0
                 ? `No hay Sub-Bots disponibles por el momento.`
-                : `❀ para ser un subbot usa el comando *#code*\n\n✧ *Sub-Bots conectados: ${users.length}*
+                : `
+❀ para ser un subbot usa el comando *#code*\n\n✧ *Sub-Bots conectados: ${users.length}*
 ❒ total de comandos 303`;
 
             const responseMessage = isMainBot
