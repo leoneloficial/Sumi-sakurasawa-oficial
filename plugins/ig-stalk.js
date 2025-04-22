@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 let handler = async (m, { conn, args }) => {
-  if (!args[0]) return m.reply('Ingresa el nombre de usuario de Instagram que deseas stalkear');
+  if (!args[0]) return m.reply('> Ingresa el nombre de usuario de Instagram que deseas stalkear');
 
   try {
     const username = args[0].replace(/^@/, '');
@@ -29,6 +29,6 @@ let handler = async (m, { conn, args }) => {
 
 handler.help = ['igstalk'].map(v => v + ' <username>');
 handler.tags = ['herramientas'];
-handler.command = /^(igstalk|verig|igver)$/i;
+handler.command = ['igstalk']
 
 export default handler;
