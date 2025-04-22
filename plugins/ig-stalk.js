@@ -1,31 +1,30 @@
-const axios = require('axios');
+import Starlights from '@StarlightsTeam/Scraper';
 
-let handler = async (m, { conn, args }) => {
-  if (!args[0]) return m.reply('> Ingresa el nombre de usuario de Instagram que deseas stalkear');
-  try {
-    const username = args[0].replace(/^@/, '');
-    const response = await axios.get(`https://api.lolhuman.xyz/api/stalkig/${username}?apikey=${lolkeysapi}`);
-    const data = response.data;
-    if (data.status === 200) {
-      const info = `Información del usuario: ${username}\n\n`;
-      info += `Nombre: ${data.result.fullname}\n`;
-      info += `Seguidores: ${data.result.followers}\n`;
-      info += `Seguidos: ${data.result.following}\n`;
-      info += `Publicaciones: ${data.result.posts}\n`;
-      info += `Biografía: ${data.result.bio}\n`;
-      await conn.sendMessage(m.chat, { text: info }, { quoted: m });
-      await conn.sendMessage(m.chat, { image: { url: data.result.photo_profile }, caption: 'Foto de perfil' }, { quoted: m });
-    } else {
-      m.reply('Error al obtener la información del usuario');
-    }
-  } catch (error) {
-    console.error('Error:', error.message);
-    m.reply('Error al obtener la información del usuario');
-  }
+let handler = async (m, { conn, text, usedPrefix, command }) => {
+if (!text) return conn.reply(m.chat,`🚩 Ingrese el nombre de usuario de Instagram.\n\nEjemplo:\n> *${usedPrefix + command}* Fernanfloo`, m);
+
+await m.react('🕓');
+try {
+let { username, followers, following, posts, description, url, thumbnail } = await Starlights.igstalk(text);
+
+let txt = '`乂  I N S T A G R A M -  S T A L K`\n\n';
+    txt += `  ✩   Usuario : ${username}\n`;
+    txt += `  ✩   Seguidores : ${followers}\n`;
+    txt += `  ✩   Siguiendo : ${following}\n`;
+    txt += `  ✩   Publicaciones : ${posts}\n`;
+    txt += `  ✩   Bio : ${description}\n`;
+    txt += `  ✩   Url : ${url}\n\n`;
+
+conn.reply(m.chat, txt, m)
+await m.react('✅');
+} catch {
+await m.react('✖️');
+}
 };
 
-handler.help = ['igstalk'];
-handler.tags = ['herramientas'];
-handler.command = /^igstalk$/i;
+handler.help = ['igstalk <usuario>'];
+handler.tags = ['tools'];
+handler.command = ['igstalk', 'instagramstalk', 'instagram-stalk'];
+handler.register = true;
 
 export default handler;
