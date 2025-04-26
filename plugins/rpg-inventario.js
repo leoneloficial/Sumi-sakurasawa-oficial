@@ -8,7 +8,7 @@ let handler = async (m, { conn, usedPrefix }) => {
         return conn.reply(m.chat, `${emoji} El usuario no se encuentra en mi base de Datos.`, m);
     }
     
-    let img = 'https://qu.ax/fRMNm.jpg';
+    let img = 'https://files.catbox.moe/709bhy.jpg';
     let user = global.db.data.users[who];
     let name = conn.getName(who);
 
