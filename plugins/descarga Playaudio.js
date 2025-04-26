@@ -1,73 +1,52 @@
-import fetch from "node-fetch";
-import yts from "yt-search";
-
-
-const encodedApi = "aHR0cHM6Ly9hcGkudnJlZGVuLndlYi5pZC9hcGkveXRtcDM=";
-
-
-const getApiUrl = () => Buffer.from(encodedApi, "base64").toString("utf-8");
-
-const fetchWithRetries = async (url, maxRetries = 2) => {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data?.status === 200 && data.result?.download?.url) {
-        return data.result;
-      }
-    } catch (error) {
-      console.error(`Intento ${attempt + 1} fallido:`, error.message);
-    }
-  }
-  throw new Error("No se pudo obtener la música después de varios intentos.");
-};
-
-
-let handler = async (m, { conn, text }) => {
-  if (!text || !text.trim()) {
-    return conn.sendMessage(m.chat, {
-      text: "*❀ ingresa el nombre de la música a descargar.*`\n\n*Ejemplo:* `.play No llores más`",
-    });
-  }
+let handler = async (m, { conn, usedPrefix, command, text }) => {
+  if (!text) return m.reply(`❀ Ingresa un texto para buscar en YouTube.\n> *Ejemplo:* ${usedPrefix + command} Shakira`);
 
   try {
-    await conn.sendMessage(m.chat, { react: { text: "🌸", key: m.key } });
+    const searchApi = `https://delirius-apiofc.vercel.app/search/ytsearch?q=${text}`;
+    const searchResponse = await fetch(searchApi);
+    const searchData = await searchResponse.json();
 
-    const searchResults = await yts(text.trim());
-    const video = searchResults.videos[0];
-    if (!video) throw new Error("No se encontraron resultados.");
+    if (!searchData?.data || searchData.data.length === 0) {
+      return m.reply(`⚠️ No se encontraron resultados para "${text}".`);
+    }
 
-    const apiUrl = `${getApiUrl()}?url=${encodeURIComponent(video.url)}`;
-    const apiData = await fetchWithRetries(apiUrl);
+    const video = searchData.data[0]; // Tomar el primer resultado
+    const videoDetails = ` *「✦」 ${video.title}*
+
+> ✦ *Canal:* » ${video.author.name}
+> ⴵ *Duración:* » ${video.duration}
+> ✰ *Vistas:* » ${video.views}
+> ✐ *Publicado:* » ${video.publishedAt}
+> 🜸 *Enlace:* » ${video.url}
+`;
 
     await conn.sendMessage(m.chat, {
-      image: { url: video.thumbnail },
-      caption: `*「✦」descargando ${video.title}*
+      image: { url: video.image },
+      caption: videoDetails.trim()
+    }, { quoted: m });
 
-> ✦ Canal » *${video.author.name}*\n> ✰ *Vistas:* » ${video.views}\n> ⴵ *Duración:* » ${video.timestamp}\n> ✐  *Autor:* » ${video.author.name}`,
+    const downloadApi = `https://api.vreden.my.id/api/ytmp3?url=${video.url}`;
+    const downloadResponse = await fetch(downloadApi);
+    const downloadData = await downloadResponse.json();
 
- 
-   });
+    if (!downloadData?.result?.download?.url) {
+      return m.reply("❌ No se pudo obtener el audio del video.");
+    }
+    await conn.sendMessage(m.chat, {
+      audio: { url: downloadData.result.download.url },
+      mimetype: 'audio/mpeg',
+      fileName: `${video.title}.mp3`
+    }, { quoted: m });
 
-    const audioMessage = {
-      audio: { url: apiData.download.url },
-      mimetype: "audio/mpeg",
-      fileName: `${video.title}.mp3`,
-    };
-
-    await conn.sendMessage(m.chat, audioMessage, { quoted: m });
-    await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
+    await m.react("✅");
   } catch (error) {
-    console.error("Error:", error);
-    await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
-    await conn.sendMessage(m.chat, {
-      text: `❌ *Error al procesar tu solicitud:*\n${error.message || "Error desconocido"}`,
-    });
+    console.error(error);
+    m.reply(`❌ Error al procesar la solicitud:\n${error.message}`);
   }
 };
 
-handler.command = ['playaudio','mp3',]; // Puedes usar ['play', 'tocar'] si quieres más alias
-handler.help = ['playaudio <texto>','mp3',];
-handler.tags = ['downloader'];
+handler.command = ['playaudio', 'playaudio'];
+handler.help = ['play <texto>', 'play<texto>'];
+handler.tags = ['media'];
 
 export default handler;
