@@ -25,7 +25,7 @@ ${usedPrefix + command} welcome
 `)
 }
     let q = m.quoted ? m.quoted : m;
-    let isWel = 
+    let isWel = /wel|welcome$/.test(text);
     if (!q) return m.reply(`🌱 Responde a una imagen para cambiar el logo del bot.`);   
 
     let buffer;
