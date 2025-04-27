@@ -5,35 +5,35 @@ import fetch from "node-fetch";
 import FormData from "form-data";
 import ws from "ws";
 
-let handler = async (m, { conn,args, text, command, usedPrefix, isOwner }) => {
-    const users = [...new Set([
-        ...global.conns
-            .filter((conn) => conn.user && conn.ws?.socket && conn.ws.socket.readyState !== ws.CLOSED)
-            .map((conn) => conn.user.jid)
-    ])];
+let handler = async (m, { conn, args, text, command, usedPrefix, isOwner }) => {
+    const users = [...new Set(
+        global.conns
+            .filter(conn => conn.user && conn.ws?.socket && conn.ws.socket.readyState !== ws.CLOSED)
+            .map(conn => conn.user.jid)
+    )];
 
     let isSubbot = users.includes(m.sender);
     if (!isSubbot && !isOwner) return m.reply("⚠️ Solo un subbot autorizado puede usar este comando.");
-if (!args[0]) {
-m.reply(`🌲 Por favor especifica la categoría en la que desea cambiar la imagen. Lista :
 
- - welcome -> Cambia la imagen del welcome.
- - banner -> Cambia la imagen del menú.
+    if (!args[0]) {
+        return m.reply(`🌲 Por favor especifica la categoría en la que desea cambiar la imagen. Lista :
+
+- welcome -> Cambia la imagen del welcome.
+- banner -> Cambia la imagen del menú.
 
 ## Ejemplo :
 ${usedPrefix + command} welcome
-`)
-}
+`);
+    }
+
     let q = m.quoted ? m.quoted : m;
-    let isWel = /wel|welcome$/.test(text);
-    if (!q) return m.reply(`🌱 Responde a una imagen para cambiar el logo del bot.`);   
+    if (!q) return m.reply(`🌱 Responde a una imagen para cambiar el logo del bot.`);
 
     let buffer;
     try {
         buffer = await q.download();
     } catch (e) {
         if (q.url) {
-            console.log("Descargando desde URL:", q.url);
             buffer = await fetch(q.url).then(res => res.buffer());
         }
     }
@@ -49,19 +49,20 @@ ${usedPrefix + command} welcome
     fs.unlinkSync(filePath);
 
     if (!file || !file[0]?.url) return m.reply("Error al subir el archivo.");
-let cap = `
+
+    let isWel = /wel|welcome$/.test(args[0]?.toLowerCase() || "");
+    let cap = `
 ≡ 🌴 Se ha cambiado con éxito la imagen ${isWel ? "de la bienvenida" : "del menú"} para @${conn.user.jid.split("@")[0]}
 `;
-if (args[0] === "banner") {
-global.db.data.settings[conn.user.jid].logo.banner = file[0].url;
-conn.sendMessage(m.chat, { image: { url: file[0].url }, caption: cap, mentions: conn.parseMention(cap) }, { quoted: m });
-} else if(args[0] === "welcome") {
-global.db.data.settings[conn.user.jid].logo.welcome = file[0].url;
-conn.sendMessage(m.chat, { image: { url: file[0].url }, caption: cap, mentions: conn.parseMention(cap) }, { quoted: m });
-} else {
-m.reply("No coincide con ninguna opción de la lista.")
-}
+
+    if (args[0] === "banner" || args[0] === "welcome") {
+        global.db.data.settings[conn.user.jid].logo[args[0]] = file[0].url;
+        conn.sendMessage(m.chat, { image: { url: file[0].url }, caption: cap, mentions: conn.parseMention(cap) }, { quoted: m });
+    } else {
+        return m.reply("No coincide con ninguna opción de la lista.");
+    }
 };
+
 handler.tags = ["serbot"];
 handler.help = handler.command = ["setlogo"];
 export default handler;
@@ -77,10 +78,9 @@ async function upload(filePath) {
             headers: formData.getHeaders()
         });
 
-        const result = await response.json();
-        return result.success ? result.files : null;
+        const result = await response.json().catch(() => null);
+        return result && result.success ? result.files : null;
     } catch (error) {
-        console.error("Error al subir archivo:", error);
         return null;
     }
 }
