@@ -3,6 +3,7 @@ import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
 let bot = global.db.data.settings[conn.user.jid]
+let redes = ""
 
   if (!m.messageStubType || !m.isGroup) return !0;
   let pp = bot.logo.welcome || await conn.profilePictureUrl(m.messageStubParameters[0], 'image').catch(_ => 'https://files.catbox.moe/un7lt7.jpg')
