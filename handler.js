@@ -218,13 +218,15 @@ if (!('restrict' in settings)) settings.restrict = true
 if (!('jadibotmd' in settings)) settings.jadibotmd = true
 if (!('antiPrivate' in settings)) settings.antiPrivate = false
 if (!('autoread' in settings)) settings.autoread = false
+if (!('logo' in settings)) settings.logo = ""
 } else global.db.data.settings[this.user.jid] = {
 self: false,
 restrict: true,
 jadibotmd: true,
 antiPrivate: false,
 autoread: false,
-status: 0
+status: 0,
+logo: "",
 }
 } catch (e) {
 console.error(e)
