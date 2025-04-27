@@ -599,7 +599,7 @@ let bot = global.db.data.settings[conn.user.jid]
           externalAdReply: {
               title: botname,
               body: textbot,
-              thumbnailUrl: bot.logo || banner,
+              thumbnailUrl: bot.logo.banner || banner,
               sourceUrl: redes,
               mediaType: 1,
               showAdAttribution: true,
