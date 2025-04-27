@@ -584,7 +584,7 @@ la Bot.
 ᰔᩚ *#ttt*
 > ✦ Crea una sala de juego.
   `.trim()
-
+let bot = global.db.data.settings[conn.user.jid]
   await conn.sendMessage(m.chat, { 
       text: txt,
       contextInfo: {
@@ -599,7 +599,7 @@ la Bot.
           externalAdReply: {
               title: botname,
               body: textbot,
-              thumbnailUrl: banner,
+              thumbnailUrl: bot.logo || banner,
               sourceUrl: redes,
               mediaType: 1,
               showAdAttribution: true,
