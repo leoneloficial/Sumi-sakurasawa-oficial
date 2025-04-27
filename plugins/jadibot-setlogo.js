@@ -1,3 +1,10 @@
+import fs from "fs";
+import path from "path";
+import crypto from "crypto";
+import fetch from "node-fetch";
+import FormData from "form-data";
+import ws from "ws";
+
 let handler = async (m, { conn, args, text, command, usedPrefix, isOwner }) => {
     const users = [...new Set(
         global.conns
@@ -47,6 +54,7 @@ ${usedPrefix + command} welcome
     let cap = `
 ≡ 🌴 Se ha cambiado con éxito la imagen ${isWel ? "de la bienvenida" : "del menú"} para @${conn.user.jid.split("@")[0]}
 `;
+
     if (!global.db.data.settings[conn.user.jid]) {
         global.db.data.settings[conn.user.jid] = { logo: {} };
     }
@@ -57,4 +65,26 @@ ${usedPrefix + command} welcome
     } else {
         return m.reply("No coincide con ninguna opción de la lista.");
     }
-};
+}
+handler.tags = ["serbot"];
+handler.help = handler.command = ["setlogo"];
+export default handler;
+
+async function upload(filePath) {
+    try {
+        const formData = new FormData();
+        formData.append("file", fs.createReadStream(filePath));
+
+        const response = await fetch("https://cdnmega.vercel.app/upload", {
+            method: "POST",
+            body: formData,
+            headers: formData.getHeaders()
+        });
+
+        const result = await response.json();
+        return result.success ? result.files : null;
+    } catch (error) {
+        console.error("Error al subir archivo:", error);
+        return null;
+    }
+}
