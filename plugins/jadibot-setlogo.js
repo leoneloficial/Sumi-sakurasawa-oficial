@@ -5,7 +5,7 @@ import fetch from "node-fetch";
 import FormData from "form-data";
 import ws from "ws";
 
-let handler = async (m, { conn, text, command, usedPrefix, isOwner }) => {
+let handler = async (m, { conn,args, text, command, usedPrefix, isOwner }) => {
     const users = [...new Set([
         ...global.conns
             .filter((conn) => conn.user && conn.ws?.socket && conn.ws.socket.readyState !== ws.CLOSED)
@@ -14,8 +14,18 @@ let handler = async (m, { conn, text, command, usedPrefix, isOwner }) => {
 
     let isSubbot = users.includes(m.sender);
     if (!isSubbot && !isOwner) return m.reply("⚠️ Solo un subbot autorizado puede usar este comando.");
+if (!args[0]) {
+m.reply(`🌲 Por favor especifica la categoría en la que desea cambiar la imagen. Lista :
 
+ - welcome -> Cambia la imagen del welcome.
+ - banner -> Cambia la imagen del menú.
+
+## Ejemplo :
+${usedPrefix + command} welcome
+`)
+}
     let q = m.quoted ? m.quoted : m;
+    let isWel = 
     if (!q) return m.reply(`🌱 Responde a una imagen para cambiar el logo del bot.`);   
 
     let buffer;
@@ -39,13 +49,18 @@ let handler = async (m, { conn, text, command, usedPrefix, isOwner }) => {
     fs.unlinkSync(filePath);
 
     if (!file || !file[0]?.url) return m.reply("Error al subir el archivo.");
-
-    global.db.data.settings[conn.user.jid].logo = file[0].url;
-
-    let cap = `
-≡ 🌴 Se ha cambiado con éxito el logo para @${conn.user.jid.split("@")[0]}
+let cap = `
+≡ 🌴 Se ha cambiado con éxito la imagen ${isWel ? "de la bienvenida" : "del menú"} para @${conn.user.jid.split("@")[0]}
 `;
-    conn.sendMessage(m.chat, { image: { url: file[0].url }, caption: cap, mentions: conn.parseMention(cap) }, { quoted: m });
+if (args[0] === "banner") {
+global.db.data.settings[conn.user.jid].logo.banner = file[0].url;
+conn.sendMessage(m.chat, { image: { url: file[0].url }, caption: cap, mentions: conn.parseMention(cap) }, { quoted: m });
+} else if(args[0] === "welcome") {
+global.db.data.settings[conn.user.jid].logo.welcome = file[0].url;
+conn.sendMessage(m.chat, { image: { url: file[0].url }, caption: cap, mentions: conn.parseMention(cap) }, { quoted: m });
+} else {
+m.reply("No coincide con ninguna opción de la lista.")
+}
 };
 handler.tags = ["serbot"];
 handler.help = handler.command = ["setlogo"];
