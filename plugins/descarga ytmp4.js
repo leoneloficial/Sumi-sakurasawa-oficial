@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 
 let handler = async (m, { conn, text }) => {
-  if (!text) return m.reply("❌ Ingresa un enlace válido de YouTube.\nEjemplo: .ytmp4 https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  if (!text) return m.reply("❀ Ingresa un enlace válido de YouTube.\nEjemplo: .ytmp4 https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 
   try {
     let apiUrl = `https://api.vreden.my.id/api/ytmp4?url=${encodeURIComponent(text)}`;
