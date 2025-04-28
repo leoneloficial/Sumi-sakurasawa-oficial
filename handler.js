@@ -217,6 +217,7 @@ if (!('self' in settings)) settings.self = false
 if (!('restrict' in settings)) settings.restrict = true
 if (!('jadibotmd' in settings)) settings.jadibotmd = true
 if (!('antiPrivate' in settings)) settings.antiPrivate = false
+ir (!('botName' in settings)) settings.botName = ""
 if (!('autoread' in settings)) settings.autoread = false
 if (!('logo' in settings)) settings.logo = { banner: '', welcome: '' }
 } else global.db.data.settings[this.user.jid] = {
@@ -226,6 +227,7 @@ jadibotmd: true,
 antiPrivate: false,
 autoread: false,
 status: 0,
+botName: "",
 logo: { banner: '', welcome: '' },
 }
 } catch (e) {
