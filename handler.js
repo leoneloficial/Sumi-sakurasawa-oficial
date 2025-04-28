@@ -217,6 +217,8 @@ if (!('self' in settings)) settings.self = false
 if (!('restrict' in settings)) settings.restrict = true
 if (!('jadibotmd' in settings)) settings.jadibotmd = true
 if (!('antiPrivate' in settings)) settings.antiPrivate = false
+if (!('welcome' in settings)) settings.welcome = ""
+if (!('bye' in settings)) settings.bye = ""
 if (!('botName' in settings)) settings.botName = ""
 if (!('autoread' in settings)) settings.autoread = false
 if (!('logo' in settings)) settings.logo = { banner: '', welcome: '' }
@@ -228,6 +230,8 @@ antiPrivate: false,
 autoread: false,
 status: 0,
 botName: "",
+welcome: "",
+bye: "",
 logo: { banner: '', welcome: '' },
 }
 } catch (e) {
