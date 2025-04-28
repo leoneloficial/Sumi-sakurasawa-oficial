@@ -19,6 +19,7 @@ let cap = `
 
 🌿 Nuevo nombre : ${text}
 `;
+conn.reply(m.chat, cap, m, { mentions: conn.parseMention(cap)})
 
 }
 handler.tags = ["serbot"];
