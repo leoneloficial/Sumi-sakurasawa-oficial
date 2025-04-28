@@ -599,7 +599,7 @@ let bot = global.db.data.settings[conn.user.jid]
           forwardingScore: 999,
           externalAdReply: {
               title: bottName,
-              body: global.textobot,
+              body: global.textbot,
               thumbnailUrl: bot.logo.banner || banner,
               sourceUrl: redes,
               mediaType: 1,
