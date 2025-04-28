@@ -7,6 +7,9 @@ global.botname = global.db.data.settings[conn.user.jid].botName || global.bottna
 
 global.textbot = `${botname} Powered by ${conn.getName(conn.user.jid)}` || global.textobot
 
+global.welcom1 = bot.welcome || welcomm1
+global.welcom2 = bot.bye || welcomm2
+
 let bot = global.db.data.settings[conn.user.jid]
 let redes = ""
 
