@@ -6,9 +6,10 @@ let handler = async (m, { conn, args }) => {
     let uptime = clockString(_uptime)
     let totalreg = Object.keys(global.db.data.users).length
     let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
+    let bottName = global.db.data.settings[conn.user.jid].botName || botname
     
     let txt = `
-Hola! Soy  *${botname}* 
+Hola! Soy  *${bottName}* 
 ⊹˚୨ •𓆩(=^●ω●^=)𓆪• ❀
 Aquí tienes la lista de comandos
 ╭┈ ↷
