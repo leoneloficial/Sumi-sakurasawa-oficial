@@ -2,6 +2,7 @@ import { WAMessageStubType } from '@whiskeysockets/baileys'
 import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
+global.botname = global.db.data.settings[conn.user.jid].botName || global.bottname
 let bot = global.db.data.settings[conn.user.jid]
 let redes = ""
 
