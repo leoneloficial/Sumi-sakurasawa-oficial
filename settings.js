@@ -45,8 +45,8 @@ global.yukiJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.packname = '❀ sᥙmі sᥲkᥙrᥲsᥲᥕᥲ ❀'
-global.bottname = '❀ sᥙmі sᥲkᥙrᥲsᥲᥕᥲ ❀'
+global.packname = '你好早上好你好吗'
+global.bottname = '你好早上好你好吗'
 global.wm = ''
 global.author = 'Made By ৎ୭࠭͢𓆩𝕷͢𝖊𝖔፝֟፝֟፝֟፝֟፝֟፝֟𝖓𝖊𝖑𓆪'
 global.dev = '© ⍴᥆ᥕᥱrᥱძ ᑲᥡ ৎ୭࠭͢𓆩𝕷͢𝖊𝖔፝֟፝֟፝֟፝֟፝֟፝֟𝖓𝖊𝖑𓆪'
@@ -56,8 +56,8 @@ global.etiqueta = 'ৎ୭࠭͢𓆩𝕷͢𝖊𝖔፝֟፝֟፝֟፝֟፝֟፝֟�
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
 global.moneda = 'coin'
-global.welcomm1 = '❍ Edita Con El Comando setwelcome'
-global.welcomm2 = '❍ Edita Con El Comando setbye'
+global.welcomm1 = '✎ Edita Con El Comando setwelcome'
+global.welcomm2 = '✎ Edita Con El Comando setbye'
 global.banner = 'https://files.catbox.moe/2oxo4b.jpg'
 global.avatar = 'https://files.catbox.moe/a10h2o.jpg'
 
