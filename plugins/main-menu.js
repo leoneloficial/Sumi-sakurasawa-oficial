@@ -30,6 +30,14 @@ Aquí tienes la lista de comandos
 
 ᥫ᭡ Comandos para ver estado e información de la Bot.
 ─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─
+ᰔᩚ #setname 
+> ✦ cambia el nombre de tu subbots a tu manera 
+ᰔᩚ #setlogo banner 
+> ✦ cambia la foto del menú a tu gusto
+ᰔᩚ #setlogo welcome
+> ✦ cambia la imagen de tu welcome a tu gusto 
+ᰔᩚ #setprofile 
+> ✦ cambia tu foto de perfil de whatsapp
 ᰔᩚ *#help • #menu*
 > ✦ Ver la lista de comandos de la Bot.
 ᰔᩚ *#uptime • #runtime*
