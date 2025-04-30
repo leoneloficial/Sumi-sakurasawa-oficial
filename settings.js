@@ -69,7 +69,7 @@ global.channel = 'https://whatsapp.com/channel/0029VbAc6cS002TEZ4r5261E'
 global.channel2 = 'https://whatsapp.com/channel/0029VbAc6cS002TEZ4r5261E'
 global.md = 'https://github.com/The-King-Destroy/Yuki_Suou-Bot'
 global.correo = 'thekingdestroy507@gmail.com'
-global.cn ='https://whatsapp.com/channel/0029Vagdmfv1SWt5nfdR4z3wa';
+global.cn ='https://whatsapp.com/channel/0029VbAc6cS002TEZ4r5261E';
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
