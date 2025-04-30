@@ -376,7 +376,7 @@ if (!['grupo-unbanchat.js'].includes(name) && chat && chat.isBanned && !isROwner
 if (name != 'grupo-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && name != 'grupo-delete.js' && chat?.isBanned && !isROwner) return 
 if (user.antispam > 2) return
 if (m.text && user.banned && !isROwner) {
-m.reply(`《✦》Estas baneado/a, no puedes usar comandos en este bot!\n\n${user.bannedReason ? `✰ *Motivo:* ${user.bannedReason}` : '✰ *Motivo:* Sin Especificar'}\n\n> ✧ Si este Bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`)
+m.reply(`《✧》Estas baneado/a, no puedes usar comandos en este bot!\n\n${user.bannedReason ? `✰ *Motivo:* ${user.bannedReason}` : '✰ *Motivo:* Sin Especificar'}\n\n> ✧ Si este Bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`)
 user.antispam++
 return
 }
@@ -444,7 +444,7 @@ m.reply('chirrido -_-')
 else
 m.exp += xp
 if (!isPrems && plugin.coin && global.db.data.users[m.sender].coin < plugin.coin * 1) {
-conn.reply(m.chat, `❮✦❯ Se agotaron tus ${moneda}`, m)
+conn.reply(m.chat, `《✧》 Se agotaron tus ${moneda}`, m)
 continue
 }
 if (plugin.level > _user.level) {
@@ -567,15 +567,15 @@ let user2 = m.pushName || 'Anónimo'
 let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
 
 const msg = {
-rowner: `『✦』El comando *${comando}* solo puede ser usado por los creadores del bot.`, 
-owner: `『✦』El comando *${comando}* solo puede ser usado por los desarrolladores del bot.`, 
-mods: `『✦』El comando *${comando}* solo puede ser usado por los moderadores del bot.`, 
-premium: `『✦』El comando *${comando}* solo puede ser usado por los usuarios premium.`, 
-group: `『✦』El comando *${comando}* solo puede ser usado en grupos.`,
-private: `『✦』El comando *${comando}* solo puede ser usado al chat privado del bot.`,
-admin: `『✦』El comando *${comando}* solo puede ser usado por los administradores del grupo.`, 
-botAdmin: `『✦』Para ejecutar el comando *${comando}* debo ser administrador del grupo.`,
-unreg: `『✦』El comando *${comando}* solo puede ser usado por los usuarios registrado, registrate usando:\n> » #${verifyaleatorio} ${user2}.${edadaleatoria}`,
+rowner: `《✧》El comando *${comando}* solo puede ser usado por los creadores del bot.`, 
+owner: `《✧》El comando *${comando}* solo puede ser usado por los desarrolladores del bot.`, 
+mods: `《✧》El comando *${comando}* solo puede ser usado por los moderadores del bot.`, 
+premium: `《✧》El comando *${comando}* solo puede ser usado por los usuarios premium.`, 
+group: `《✧》El comando *${comando}* solo puede ser usado en grupos.`,
+private: `《✧》El comando *${comando}* solo puede ser usado al chat privado del bot.`,
+admin: `《✧》El comando *${comando}* solo puede ser usado por los administradores del grupo.`, 
+botAdmin: `《✧》Para ejecutar el comando *${comando}* debo ser administrador del grupo.`,
+unreg: `《✧》El comando *${comando}* solo puede ser usado por los usuarios registrado, registrate usando:\n> » #${verifyaleatorio} ${user2}.${edadaleatoria}`,
 restrict: `『✦』Esta caracteristica está desactivada.`
 }[type];
 if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
