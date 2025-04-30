@@ -12,8 +12,8 @@ let handler = async (m, { conn, text }) => {
       return m.reply("❌ No se pudo obtener el video. Verifica el enlace.");
     }
     await conn.sendMessage(m.chat, {
-      //video: { url: data.result.download.url },
-     // caption: `🎥 *Video Descargado*\n\n🔖 *Título:* ${data.result.title || "Sin título"}\n📏 *Tamaño:* ${data.result.HumanReadable || "Desconocido"}\n🌐 *Enlace directo:* ${text}`
+      video: { url: data.result.download.url },
+      caption: `✦ *Título:* ${data.result.title || "Sin título"}\n> ❏ *Tamaño:* ${data.result.HumanReadable || "Desconocido"}\n> 🜸 *Enlace directo:* ${text}`
     }, { quoted: m });
 
     await m.react("✅");
