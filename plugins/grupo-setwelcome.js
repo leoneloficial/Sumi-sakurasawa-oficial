@@ -1,39 +1,25 @@
-let handler = async (m, { conn, text }) => {
-  if (!m.isGroup) return m.reply(`${emoji} Este comando solo funciona en grupos`);
+let handler = async (m, { conn, text, isAdmin, isOwner }) => {
+  // Configuración base de la bienvenida
+  const defaultWelcome = 'Bienvenid@ al grupo @user';
   
+  // Si no hay texto adicional, se usa solo la bienvenida base
+  if (!text) {
+    global.db.data.settings[conn.user.jid].welcome = defaultWelcome;
+    return m.reply(`${emoji} Se ha establecido la bienvenida predeterminada:\n\n${defaultWelcome.replace('@user', '@' + m.sender.split('@')[0])}`);
+  }
   
-  const baseWelcome = 'Bienvenid@ al grupo @user';
+  // Combinar la bienvenida base con el texto proporcionado
+  const fullWelcome = `${defaultWelcome}\n\n${text.trim()}`;
+  global.db.data.settings[conn.user.jid].welcome = fullWelcome;
   
-
-  const fullWelcome = text ? `${baseWelcome}\n\n${text.trim()}` : baseWelcome;
-  
-
-  if (!global.db.data.settings) global.db.data.settings = {};
-  global.db.data.settings[conn.user.jid] = { welcome: fullWelcome };
-  
-  
-  const preview = fullWelcome.replace('@user', `@${m.sender.split('@')[0]}`);
-  
-  await conn.sendMessage(m.chat, {
-    text: `${emoji} *Previsualización de la bienvenida:*\n\n${preview}`,
-    mentions: [m.sender]
-  }, { quoted: m });
-};
-
-
-const sendWelcome = async (conn, chatId, userId) => {
-  const welcomeText = global.db.data.settings[conn.user.jid]?.welcome || 'Bienvenid@ al grupo @user';
-  const formattedWelcome = welcomeText.replace('@user', `@${userId.split('@')[0]}`);
-  
-  await conn.sendMessage(chatId, {
-    text: formattedWelcome,
-    mentions: [userId]
-  });
+  m.reply(`${emoji} La bienvenida se ha actualizado correctamente:\n\n${fullWelcome.replace('@user', '@' + m.sender.split('@')[0])}`);
 };
 
 handler.help = ['setwelcome <texto>'];
 handler.tags = ['group'];
 handler.command = ['setwelcome'];
+handler.owner = false;
+handler.admin = true;
 handler.group = true;
 
-export { handler, sendWelcome };
+export default handler;
