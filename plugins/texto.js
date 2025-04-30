@@ -1,5 +1,4 @@
 import { createCanvas, registerFont } from 'canvas';
-import { readFile, unlink } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -7,35 +6,66 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fontsDir = join(__dirname, 'fonts');
 
-// Registrar fuentes con manejo de errores
-const registerCustomFonts = () => {
+// Registro de fuentes mejorado
+const registerAppFonts = () => {
+  const results = {
+    emoji: false,
+    sansRegular: false,
+    sansItalic: false
+  };
+
   try {
-    registerFont(join(fontsDir, 'NotoColorEmoji.ttf'), {
-      family: 'Noto Color Emoji',
-      weight: 'normal'
-    });
-    registerFont(join(fontsDir, 'NotoSans-Regular.ttf'), {
-      family: 'Noto Sans',
-      weight: 'normal'
-    });
-    console.log('✅ Fuentes personalizadas registradas');
-    return true;
+    // 1. Intenta registrar Noto Color Emoji
+    try {
+      registerFont(join(fontsDir, 'NotoColorEmoji.ttf'), {
+        family: 'Noto Color Emoji',
+        weight: 'normal'
+      });
+      results.emoji = true;
+    } catch (e) {
+      console.warn('No se encontró NotoColorEmoji.ttf, usando emojis del sistema');
+    }
+
+    // 2. Registrar fuentes variables principales
+    try {
+      registerFont(join(fontsDir, 'NotoSans-VariableFont_wdth,wght.ttf'), {
+        family: 'Noto Sans',
+        weight: '400'
+      });
+      results.sansRegular = true;
+    } catch (e) {
+      console.error('Error al registrar NotoSans-Variable:', e.message);
+    }
+
+    // 3. Registrar variante itálica
+    try {
+      registerFont(join(fontsDir, 'NotoSans-Italic-VariableFont_wdth,wght.ttf'), {
+        family: 'Noto Sans',
+        style: 'italic',
+        weight: '400'
+      });
+      results.sansItalic = true;
+    } catch (e) {
+      console.error('Error al registrar NotoSans-Italic:', e.message);
+    }
+
+    return results;
   } catch (error) {
-    console.warn('⚠️ No se pudieron cargar las fuentes:', error.message);
-    return false;
+    console.error('Error crítico al registrar fuentes:', error);
+    return results;
   }
 };
 
-const fontsRegistered = registerCustomFonts();
-const getFontFamily = () => fontsRegistered 
-  ? '"Noto Color Emoji", "Noto Sans", sans-serif' 
-  : '"Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+const fontStatus = registerAppFonts();
 
-// Configuración dinámica de canvas
-let loadImage;
-import('canvas').then(mod => {
-  loadImage = mod.loadImage;
-});
+// Configuración de canvas dinámica
+let canvasLib;
+const loadCanvas = async () => {
+  if (!canvasLib) {
+    canvasLib = await import('canvas');
+  }
+  return canvasLib;
+};
 
 // Mapeo de banderas
 const flagMap = [
@@ -48,6 +78,19 @@ const flagMap = [
   ['54', '🇦🇷'], ['53', '🇨🇺'], ['52', '🇲🇽'], ['51', '🇵🇪'],
   ['34', '🇪🇸'], ['1', '🇺🇸']
 ];
+
+// Paleta de colores
+const colores = {
+  rojo: ['#F44336', '#FFCDD2'],
+  azul: ['#00B4DB', '#0083B0'],
+  verde: ['#4CAF50', '#C8E6C9'],
+  rosa: ['#E91E63', '#F8BBD0'],
+  morado: ['#9C27B0', '#E1BEE7'],
+  negro: ['#212121', '#9E9E9E'],
+  naranja: ['#FF9800', '#FFE0B2'],
+  gris: ['#607D8B', '#CFD8DC'],
+  celeste: ['#00FFFF', '#E0FFFF']
+};
 
 // Funciones utilitarias
 function numberWithFlag(num) {
@@ -85,20 +128,6 @@ async function niceName(jid, conn, chatId, qPush, fallback = '') {
   return numberWithFlag(jid.split('@')[0]);
 }
 
-// Paleta de colores
-const colores = {
-  rojo: ['#F44336', '#FFCDD2'],
-  azul: ['#00B4DB', '#0083B0'],
-  verde: ['#4CAF50', '#C8E6C9'],
-  rosa: ['#E91E63', '#F8BBD0'],
-  morado: ['#9C27B0', '#E1BEE7'],
-  negro: ['#212121', '#9E9E9E'],
-  naranja: ['#FF9800', '#FFE0B2'],
-  gris: ['#607D8B', '#CFD8DC'],
-  celeste: ['#00FFFF', '#E0FFFF']
-};
-
-// Función para manejar texto con emojis
 function splitTextWithEmojis(text, maxWidth, ctx) {
   const words = text.split(' ');
   const lines = [];
@@ -122,11 +151,9 @@ function splitTextWithEmojis(text, maxWidth, ctx) {
 
 // Handler principal
 const handler = async (msg, { conn, args }) => {
-  if (!loadImage) {
-    const canvasModule = await import('canvas');
-    loadImage = canvasModule.loadImage;
-  }
+  const { createCanvas, loadImage } = await loadCanvas();
 
+  // Obtener parámetros del mensaje
   const { remoteJid: chatId } = msg.key;
   const context = msg.message?.extendedTextMessage?.contextInfo;
   const quotedMsg = context?.quotedMessage;
@@ -153,13 +180,15 @@ const handler = async (msg, { conn, args }) => {
 
   if (!content) {
     return conn.sendMessage(chatId, { 
-      text: `✏️ Uso: *.texto [color] mensaje*\n\nColores: ${Object.keys(colores).join(', ')}` 
+      text: `✏️ Uso: *.texto [color] mensaje*\n\nColores disponibles: ${Object.keys(colores).join(', ')}` 
     }, { quoted: msg });
   }
 
+  // Obtener nombre para mostrar
   const displayName = await niceName(targetJid, conn, chatId, quotedName, fallbackPN);
-  let avatarUrl = 'https://telegra.ph/file/24fa902ead26340f3df2c.png';
   
+  // Obtener avatar
+  let avatarUrl = 'https://telegra.ph/file/24fa902ead26340f3df2c.png';
   try {
     avatarUrl = await conn.profilePictureUrl(targetJid, 'image');
   } catch {
@@ -179,7 +208,7 @@ const handler = async (msg, { conn, args }) => {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 1080, 1080);
 
-  // Avatar circular
+  // Dibujar avatar
   try {
     const avatar = await loadImage(avatarUrl);
     ctx.save();
@@ -192,14 +221,23 @@ const handler = async (msg, { conn, args }) => {
     console.error('Error al cargar avatar:', error);
   }
 
-  // Nombre de usuario
-  ctx.font = `bold 40px ${getFontFamily()}`;
+  // Configurar fuentes
+  const titleFont = fontStatus.emoji 
+    ? 'bold 40px "Noto Color Emoji", "Noto Sans", sans-serif'
+    : 'bold 40px system-ui, -apple-system, "Segoe UI Emoji", sans-serif';
+
+  const contentFont = fontStatus.emoji
+    ? 'bold 60px "Noto Color Emoji", "Noto Sans", sans-serif'
+    : 'bold 60px system-ui, -apple-system, "Segoe UI Emoji", sans-serif';
+
+  // Dibujar nombre
+  ctx.font = titleFont;
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
   ctx.fillText(displayName, 220, 100);
 
-  // Texto principal
-  ctx.font = `bold 60px ${getFontFamily()}`;
+  // Dibujar texto principal
+  ctx.font = contentFont;
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
 
@@ -210,7 +248,7 @@ const handler = async (msg, { conn, args }) => {
     ctx.fillText(line, 540, startY + (i * 80));
   });
 
-  // Logo/marca de agua
+  // Dibujar marca de agua
   try {
     const logo = await loadImage('https://files.catbox.moe/2oxo4b.jpg');
     ctx.drawImage(logo, 1080 - 180, 1080 - 180, 140, 140);
@@ -219,14 +257,13 @@ const handler = async (msg, { conn, args }) => {
   }
 
   // Enviar imagen
-  const buffer = canvas.toBuffer('image/png');
   await conn.sendMessage(chatId, { 
-    image: buffer,
+    image: canvas.toBuffer('image/png'),
     caption: '🖼 Imagen generada con emojis'
   }, { quoted: msg });
 };
 
 handler.command = ['texto'];
 handler.tags = ['tools'];
-handler.help = ['texto <mensaje>'];
+handler.help = ['texto <mensaje> - Genera una imagen con tu texto'];
 export default handler;
