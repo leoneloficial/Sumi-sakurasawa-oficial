@@ -13,9 +13,9 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   const userId = m.sender;
   let packstickers = global.db.data.users[userId] || {};
   let texto1 = textoParts[0] || packstickers.text1 || global.packsticker;
-  let texto2 = textoParts[1] || packstickers.text2 || global.packsticker2;
+  let texto2 = textoParts[1] || packstickers.text2;
 
-  const exif = await addExif(sticker, `${m.pushName}`);
+  const exif = await addExif(sticker, texto1, texto2);
 
   await conn.sendMessage(m.chat, { sticker: exif }, { quoted: m });
 };
