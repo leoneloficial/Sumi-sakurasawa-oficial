@@ -4,7 +4,7 @@ let handler = async (m, { conn, text }) => {
   
   if (!text) {
     global.db.data.settings[conn.user.jid].welcome = defaultWelcome;
-    // Mensaje de confirmación con mención de prueba
+    
     const confirmation = `${emoji} Bienvenida establecida:\n\n${defaultWelcome.replace('@user', '@' + m.sender.split('@')[0])}`;
     return conn.sendMessage(m.chat, { 
       text: confirmation,
