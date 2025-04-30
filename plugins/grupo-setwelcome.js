@@ -7,7 +7,7 @@ let handler = async (m, { conn, text }) => {
 
   const fullWelcome = text ? `${baseWelcome}\n\n${text.trim()}` : baseWelcome;
   
-  // Guardar en la base de datos
+
   if (!global.db.data.settings) global.db.data.settings = {};
   global.db.data.settings[conn.user.jid] = { welcome: fullWelcome };
   
