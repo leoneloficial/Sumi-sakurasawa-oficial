@@ -12,7 +12,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   const textoParts = text.split(/[\u2022|]/).map(part => part.trim());
   const userId = m.sender;
   let packstickers = global.db.data.users[userId] || {};
-  let texto1 = textoParts[0] || packstickers.text1 || global.packsticker;
+  let texto1 = textoParts[0] || packstickers.text1 || `${m.pushName}`;
   let texto2 = textoParts[1] || packstickers.text2;
 
   const exif = await addExif(sticker, texto1, texto2);
