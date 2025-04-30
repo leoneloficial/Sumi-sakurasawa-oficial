@@ -1,35 +1,23 @@
-import { createCanvas, loadImage } from 'canvas';
-import fs from 'fs';
-import path from 'path';
+import { createCanvas } from 'canvas';
+import { readFile, unlink } from 'fs/promises';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+
+// For dynamic imports (like canvas loadImage which isn't exported directly)
+let loadImage;
+import('canvas').then(mod => {
+  loadImage = mod.loadImage;
+});
 
 const flagMap = [
-  ['598', '🇺🇾'],
-  ['595', '🇵🇾'],
-  ['593', '🇪🇨'],
-  ['591', '🇧🇴'],
-  ['590', '🇧🇶'],
-  ['509', '🇭🇹'],
-  ['507', '🇵🇦'],
-  ['506', '🇨🇷'],
-  ['505', '🇳🇮'],
-  ['504', '🇭🇳'],
-  ['503', '🇸🇻'],
-  ['502', '🇬🇹'],
-  ['501', '🇧🇿'],
-  ['599', '🇨🇼'],
-  ['597', '🇸🇷'],
-  ['596', '🇬🇫'],
-  ['592', '🇬🇾'],
-  ['58', '🇻🇪'],
-  ['57', '🇨🇴'],
-  ['56', '🇨🇱'],
-  ['55', '🇧🇷'],
-  ['54', '🇦🇷'],
-  ['53', '🇨🇺'],
-  ['52', '🇲🇽'],
-  ['51', '🇵🇪'],
-  ['34', '🇪🇸'],
-  ['1', '🇺🇸']
+  ['598', '🇺🇾'], ['595', '🇵🇾'], ['593', '🇪🇨'], ['591', '🇧🇴'],
+  ['590', '🇧🇶'], ['509', '🇭🇹'], ['507', '🇵🇦'], ['506', '🇨🇷'],
+  ['505', '🇳🇮'], ['504', '🇭🇳'], ['503', '🇸🇻'], ['502', '🇬🇹'],
+  ['501', '🇧🇿'], ['599', '🇨🇼'], ['597', '🇸🇷'], ['596', '🇬🇫'],
+  ['594', '🇬🇫'], ['592', '🇬🇾'], ['590', '🇬🇵'], ['549', '🇦🇷'],
+  ['58', '🇻🇪'], ['57', '🇨🇴'], ['56', '🇨🇱'], ['55', '🇧🇷'],
+  ['54', '🇦🇷'], ['53', '🇨🇺'], ['52', '🇲🇽'], ['51', '🇵🇪'],
+  ['34', '🇪🇸'], ['1', '🇺🇸']
 ];
 
 function numberWithFlag(num) {
@@ -76,37 +64,112 @@ const colores = {
 };
 
 const handler = async (msg, { conn, args }) => {
+  if (!loadImage) {
+    const canvasModule = await import('canvas');
+    loadImage = canvasModule.loadImage;
+  }
+
   const chatId = msg.key.remoteJid;
   const context = msg.message?.extendedTextMessage?.contextInfo;
   const quotedMsg = context?.quotedMessage;
+
   let targetJid = msg.key.participant || msg.key.remoteJid;
   let fallbackPN = msg.pushName || '';
   let quotedName = '';
   let quotedText = '';
-  
+
   if (quotedMsg && context?.participant) {
     targetJid = context.participant;
     quotedText = quotedMsg.conversation || quotedMsg.extendedTextMessage?.text || '';
     quotedName = quotedPush(quotedMsg);
     fallbackPN = '';
   }
-  
+
   const contentFull = (args.join(' ').trim() || '').trim();
   const firstWord = contentFull.split(' ')[0].toLowerCase();
   const gradColors = colores[firstWord] || colores['azul'];
-  
-  // ... (resto del código para generar la imagen)
 
-  // Envía la imagen generada
-  await conn.sendMessage(chatId, {
-    image: fs.readFileSync(`path/to/image.png`),
-    caption: `Texto generado`
+  let content = '';
+  if (colores[firstWord]) {
+    const afterColor = contentFull.split(' ').slice(1).join(' ').trim();
+    content = afterColor || quotedText || '';
+  } else {
+    content = contentFull || quotedText || '';
+  }
+
+  if (!content || content.length === 0) {
+    return conn.sendMessage(chatId, {
+      text: `✏️ Usa el comando así:\n\n*.texto [color opcional] tu mensaje*\n\nEjemplos:\n- .texto azul Hola grupo\n- .texto Buenos días a todos\n\nColores disponibles:\nazul, rojo, verde, rosa, morado, negro, naranja, gris, celeste`
+    }, { quoted: msg });
+  }
+
+  const displayName = await niceName(targetJid, conn, chatId, quotedName, fallbackPN);
+
+  let avatarUrl = 'https://telegra.ph/file/24fa902ead26340f3df2c.png';
+  try {
+    avatarUrl = await conn.profilePictureUrl(targetJid, 'image');
+  } catch {}
+
+  await conn.sendMessage(chatId, { react: { text: '🖼️', key: msg.key } });
+
+  const canvas = createCanvas(1080, 1080);
+  const draw = canvas.getContext('2d');
+
+  const grad = draw.createLinearGradient(0, 0, 1080, 1080);
+  grad.addColorStop(0, gradColors[0]);
+  grad.addColorStop(1, gradColors[1]);
+  draw.fillStyle = grad;
+  draw.fillRect(0, 0, 1080, 1080);
+
+  const avatar = await loadImage(avatarUrl);
+  draw.save();
+  draw.beginPath();
+  draw.arc(100, 100, 80, 0, Math.PI * 2);
+  draw.clip();
+  draw.drawImage(avatar, 20, 20, 160, 160);
+  draw.restore();
+
+  draw.font = 'bold 40px Sans-serif';
+  draw.fillStyle = '#ffffff';
+  draw.fillText(displayName, 220, 100);
+
+  draw.font = 'bold 60px Sans-serif';
+  draw.fillStyle = '#ffffff';
+  draw.textAlign = 'center';
+
+  const words = content.split(' ');
+  let line = '', lines = [];
+  for (const word of words) {
+    const testLine = line + word + ' ';
+    if (draw.measureText(testLine).width > 900) {
+      lines.push(line.trim());
+      line = word + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  if (line.trim()) lines.push(line.trim());
+
+  const startY = 550 - (lines.length * 35);
+  lines.forEach((l, i) => {
+    draw.fillText(l, 540, startY + (i * 80));
   });
+
+  const logo = await loadImage('https://files.catbox.moe/2oxo4b.jpg');
+  const logoWidth = 140;
+  const logoHeight = 140;
+  const x = canvas.width - logoWidth - 40;
+  const y = canvas.height - logoHeight - 40;
+  draw.drawImage(logo, x, y, logoWidth, logoHeight);
+
+  const fileName = join(process.cwd(), 'tmp', `texto-${Date.now()}.png`);
+  const buffer = canvas.toBuffer('image/png');
+  
+  await conn.sendMessage(chatId, {
+    image: buffer,
+    caption: `🖼 imagen generada`
+  }, { quoted: msg });
 };
 
-handler.help = ['texto'];
-handler.tags = ['herramientas'];
 handler.command = ['texto'];
-handler.register = true;
-
 export default handler;
