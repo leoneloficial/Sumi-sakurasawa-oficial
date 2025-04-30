@@ -1,32 +1,27 @@
 let handler = async (m, { conn, text, isAdmin, isOwner }) => {
-  const defaultWelcome = 'Bienvenid@ al grupo @user';
-  
+  const defaultWelcome = '❀ *Bienvenido* a %group\n✰ @user\n%text\n✦ Ahora somos %members Miembros.\n•(=^●ω●^=)• Disfruta tu estadía en el grupo!';
+
   if (!text) {
     global.db.data.chats[m.chat].sWelcome = defaultWelcome;
-    const preview = defaultWelcome.replace(/@user/g, `@${m.sender.split('@')[0]}`);
-    return m.reply(`✅ Se ha establecido la bienvenida predeterminada:\n\n${preview}`);
+    const preview = defaultWelcome
+      .replace(/@user/g, `@${m.sender.split('@')[0]}`)
+      .replace('%group', await conn.getName(m.chat))
+      .replace('%text', global.welcom1 || '')
+      .replace('%members', (await conn.groupMetadata(m.chat)).participants.length);
+    return conn.reply(m.chat, `✅ *Mensaje de bienvenida establecido:*\n\n${preview}`, m);
   }
-  
-  
+
   const fullWelcome = text.includes('@user') ? text : `${defaultWelcome}\n\n${text.trim()}`;
   global.db.data.chats[m.chat].sWelcome = fullWelcome;
-  
-  const preview = fullWelcome.replace(/@user/g, `@${m.sender.split('@')[0]}`);
-  m.reply(`✅ La bienvenida se ha actualizado correctamente:\n\n${preview}`);
-};
 
-/*
-async function onParticipantUpdate({ jid, participants, action }) {
-  if (action === 'add') {
-    const welcomeMsg = global.db.data.chats[jid]?.sWelcome || 'Bienvenid@ al grupo @user';
-    participants.forEach(async (user) => {
-      const mention = '@' + user.split('@')[0];
-      const finalMsg = welcomeMsg.replace(/@user/g, mention);
-      conn.sendMessage(jid, { text: finalMsg, mentions: [user] });
-    });
-  }
-}
-*/
+  const preview = fullWelcome
+    .replace(/@user/g, `@${m.sender.split('@')[0]}`)
+    .replace('%group', await conn.getName(m.chat))
+    .replace('%text', global.welcom1 || '')
+    .replace('%members', (await conn.groupMetadata(m.chat)).participants.length);
+
+  conn.reply(m.chat, `✅ *Mensaje de bienvenida actualizado:*\n\n${preview}`, m);
+};
 
 handler.help = ['setwelcome <texto>'];
 handler.tags = ['group'];
