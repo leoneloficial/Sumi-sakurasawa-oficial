@@ -1,26 +1,43 @@
 import { createCanvas, registerFont } from 'canvas';
 import { readFile, unlink } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-// For dynamic imports
+// Configuración de rutas
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const fontsDir = join(__dirname, 'fonts');
+
+// Registrar fuentes con manejo de errores
+const registerCustomFonts = () => {
+  try {
+    registerFont(join(fontsDir, 'NotoColorEmoji.ttf'), {
+      family: 'Noto Color Emoji',
+      weight: 'normal'
+    });
+    registerFont(join(fontsDir, 'NotoSans-Regular.ttf'), {
+      family: 'Noto Sans',
+      weight: 'normal'
+    });
+    console.log('✅ Fuentes personalizadas registradas');
+    return true;
+  } catch (error) {
+    console.warn('⚠️ No se pudieron cargar las fuentes:', error.message);
+    return false;
+  }
+};
+
+const fontsRegistered = registerCustomFonts();
+const getFontFamily = () => fontsRegistered 
+  ? '"Noto Color Emoji", "Noto Sans", sans-serif' 
+  : '"Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+
+// Configuración dinámica de canvas
 let loadImage;
 import('canvas').then(mod => {
   loadImage = mod.loadImage;
 });
 
-
-try {
-  registerFont(join(process.cwd(), 'fonts', 'NotoColorEmoji.ttf'), {
-    family: 'Noto Color Emoji'
-  });
-  registerFont(join(process.cwd(), 'fonts', 'NotoSans-Regular.ttf'), {
-    family: 'Noto Sans'
-  });
-} catch (e) {
-  console.log('No se encontraron fuentes personalizadas, usando fuentes por defecto');
-}
-
+// Mapeo de banderas
 const flagMap = [
   ['598', '🇺🇾'], ['595', '🇵🇾'], ['593', '🇪🇨'], ['591', '🇧🇴'],
   ['590', '🇧🇶'], ['509', '🇭🇹'], ['507', '🇵🇦'], ['506', '🇨🇷'],
@@ -32,6 +49,7 @@ const flagMap = [
   ['34', '🇪🇸'], ['1', '🇺🇸']
 ];
 
+// Funciones utilitarias
 function numberWithFlag(num) {
   const clean = num.replace(/[^0-9]/g, '');
   for (const [code, flag] of flagMap) {
@@ -43,26 +61,31 @@ function numberWithFlag(num) {
 const quotedPush = q => (q?.pushName || q?.sender?.pushName || '');
 
 async function niceName(jid, conn, chatId, qPush, fallback = '') {
-  if (qPush && qPush.trim() && !/^\d+$/.test(qPush)) return qPush;
+  if (qPush?.trim() && !/^\d+$/.test(qPush)) return qPush;
+  
   if (chatId.endsWith('@g.us')) {
     try {
       const meta = await conn.groupMetadata(chatId);
       const p = meta.participants.find(p => p.id === jid);
       const n = p?.notify || p?.name;
-      if (n && n.trim() && !/^\d+$/.test(n)) return n;
+      if (n?.trim() && !/^\d+$/.test(n)) return n;
     } catch {}
   }
+
   try {
     const g = await conn.getName(jid);
-    if (g && g.trim() && !/^\d+$/.test(g) && !g.includes('@')) return g;
+    if (g?.trim() && !/^\d+$/.test(g) && !g.includes('@')) return g;
   } catch {}
+
   const c = conn.contacts?.[jid];
   if (c?.notify && !/^\d+$/.test(c.notify)) return c.notify;
   if (c?.name && !/^\d+$/.test(c.name)) return c.name;
-  if (fallback && fallback.trim() && !/^\d+$/.test(fallback)) return fallback;
+  if (fallback?.trim() && !/^\d+$/.test(fallback)) return fallback;
+  
   return numberWithFlag(jid.split('@')[0]);
 }
 
+// Paleta de colores
 const colores = {
   rojo: ['#F44336', '#FFCDD2'],
   azul: ['#00B4DB', '#0083B0'],
@@ -75,7 +98,7 @@ const colores = {
   celeste: ['#00FFFF', '#E0FFFF']
 };
 
-// Función para dividir texto conservando emojis
+// Función para manejar texto con emojis
 function splitTextWithEmojis(text, maxWidth, ctx) {
   const words = text.split(' ');
   const lines = [];
@@ -88,31 +111,27 @@ function splitTextWithEmojis(text, maxWidth, ctx) {
     if (metrics.width <= maxWidth) {
       currentLine = testLine;
     } else {
-      if (currentLine) {
-        lines.push(currentLine);
-      }
+      if (currentLine) lines.push(currentLine);
       currentLine = word;
     }
   }
 
-  if (currentLine) {
-    lines.push(currentLine);
-  }
-
+  if (currentLine) lines.push(currentLine);
   return lines;
 }
 
+// Handler principal
 const handler = async (msg, { conn, args }) => {
   if (!loadImage) {
     const canvasModule = await import('canvas');
     loadImage = canvasModule.loadImage;
   }
 
-  const chatId = msg.key.remoteJid;
+  const { remoteJid: chatId } = msg.key;
   const context = msg.message?.extendedTextMessage?.contextInfo;
   const quotedMsg = context?.quotedMessage;
 
-  let targetJid = msg.key.participant || msg.key.remoteJid;
+  let targetJid = msg.key.participant || chatId;
   let fallbackPN = msg.pushName || '';
   let quotedName = '';
   let quotedText = '';
@@ -124,87 +143,90 @@ const handler = async (msg, { conn, args }) => {
     fallbackPN = '';
   }
 
-  const contentFull = (args.join(' ').trim() || '').trim();
-  const firstWord = contentFull.split(' ')[0].toLowerCase();
-  const gradColors = colores[firstWord] || colores['azul'];
+  const contentFull = args.join(' ').trim() || '';
+  const firstWord = contentFull.split(' ')[0]?.toLowerCase();
+  const gradColors = colores[firstWord] || colores.azul;
 
-  let content = '';
-  if (colores[firstWord]) {
-    const afterColor = contentFull.split(' ').slice(1).join(' ').trim();
-    content = afterColor || quotedText || '';
-  } else {
-    content = contentFull || quotedText || '';
-  }
+  let content = colores[firstWord] 
+    ? contentFull.split(' ').slice(1).join(' ').trim() || quotedText || '' 
+    : contentFull || quotedText || '';
 
-  if (!content || content.length === 0) {
-    return conn.sendMessage(chatId, {
-      text: `✏️ Usa el comando así:\n\n*.texto [color opcional] tu mensaje*\n\nEjemplos:\n- .texto azul Hola grupo\n- .texto Buenos días a todos\n\nColores disponibles:\nazul, rojo, verde, rosa, morado, negro, naranja, gris, celeste`
+  if (!content) {
+    return conn.sendMessage(chatId, { 
+      text: `✏️ Uso: *.texto [color] mensaje*\n\nColores: ${Object.keys(colores).join(', ')}` 
     }, { quoted: msg });
   }
 
   const displayName = await niceName(targetJid, conn, chatId, quotedName, fallbackPN);
-
   let avatarUrl = 'https://telegra.ph/file/24fa902ead26340f3df2c.png';
+  
   try {
     avatarUrl = await conn.profilePictureUrl(targetJid, 'image');
-  } catch {}
+  } catch {
+    console.log('Usando avatar por defecto');
+  }
 
   await conn.sendMessage(chatId, { react: { text: '🖼️', key: msg.key } });
 
+  // Crear canvas
   const canvas = createCanvas(1080, 1080);
-  const draw = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
 
-  // Configurar fuentes (intentar usar Noto Color Emoji si está disponible)
-  const fontFamily = 'Noto Color Emoji, Noto Sans, Sans-serif';
-  
-  const grad = draw.createLinearGradient(0, 0, 1080, 1080);
-  grad.addColorStop(0, gradColors[0]);
-  grad.addColorStop(1, gradColors[1]);
-  draw.fillStyle = grad;
-  draw.fillRect(0, 0, 1080, 1080);
+  // Fondo con gradiente
+  const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
+  gradient.addColorStop(0, gradColors[0]);
+  gradient.addColorStop(1, gradColors[1]);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 1080, 1080);
 
-  const avatar = await loadImage(avatarUrl);
-  draw.save();
-  draw.beginPath();
-  draw.arc(100, 100, 80, 0, Math.PI * 2);
-  draw.clip();
-  draw.drawImage(avatar, 20, 20, 160, 160);
-  draw.restore();
+  // Avatar circular
+  try {
+    const avatar = await loadImage(avatarUrl);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(100, 100, 80, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(avatar, 20, 20, 160, 160);
+    ctx.restore();
+  } catch (error) {
+    console.error('Error al cargar avatar:', error);
+  }
 
-  // Nombre con emojis
-  draw.font = `bold 40px ${fontFamily}`;
-  draw.fillStyle = '#ffffff';
-  draw.textAlign = 'left';
-  draw.fillText(displayName, 220, 100);
+  // Nombre de usuario
+  ctx.font = `bold 40px ${getFontFamily()}`;
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.fillText(displayName, 220, 100);
 
-  // Texto principal con emojis
-  draw.font = `bold 60px ${fontFamily}`;
-  draw.fillStyle = '#ffffff';
-  draw.textAlign = 'center';
+  // Texto principal
+  ctx.font = `bold 60px ${getFontFamily()}`;
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
 
-  // Usar nuestra función mejorada para dividir texto
-  const lines = splitTextWithEmojis(content, 900, draw);
-
+  const lines = splitTextWithEmojis(content, 900, ctx);
   const startY = 550 - (lines.length * 35);
+  
   lines.forEach((line, i) => {
-    draw.fillText(line, 540, startY + (i * 80));
+    ctx.fillText(line, 540, startY + (i * 80));
   });
 
-  const logo = await loadImage('https://files.catbox.moe/2oxo4b.jpg');
-  const logoWidth = 140;
-  const logoHeight = 140;
-  const x = canvas.width - logoWidth - 40;
-  const y = canvas.height - logoHeight - 40;
-  draw.drawImage(logo, x, y, logoWidth, logoHeight);
+  // Logo/marca de agua
+  try {
+    const logo = await loadImage('https://files.catbox.moe/2oxo4b.jpg');
+    ctx.drawImage(logo, 1080 - 180, 1080 - 180, 140, 140);
+  } catch (error) {
+    console.error('Error al cargar logo:', error);
+  }
 
-  const fileName = join(process.cwd(), 'tmp', `texto-${Date.now()}.png`);
+  // Enviar imagen
   const buffer = canvas.toBuffer('image/png');
-  
-  await conn.sendMessage(chatId, {
+  await conn.sendMessage(chatId, { 
     image: buffer,
-    caption: `🖼 imagen generada`
+    caption: '🖼 Imagen generada con emojis'
   }, { quoted: msg });
 };
 
 handler.command = ['texto'];
+handler.tags = ['tools'];
+handler.help = ['texto <mensaje>'];
 export default handler;
