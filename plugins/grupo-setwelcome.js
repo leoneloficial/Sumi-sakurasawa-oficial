@@ -7,7 +7,7 @@ let handler = async (m, { conn, text, isAdmin, isOwner }) => {
     return m.reply(`✅ Se ha establecido la bienvenida predeterminada:\n\n${preview}`);
   }
   
-  // Asegurarse de que el texto tenga al menos un @user para reemplazar
+  
   const fullWelcome = text.includes('@user') ? text : `${defaultWelcome}\n\n${text.trim()}`;
   global.db.data.chats[m.chat].sWelcome = fullWelcome;
   
