@@ -5,7 +5,7 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
     
     try {
         // Show loading indicator
-        let loadingMsg = await conn.sendMessage(m.chat, { text: '🔍 Buscando en TikTok...' }, { quoted: m });
+        let loadingMsg = await conn.sendMessage(m.chat, { text: '❀ Buscando en TikTok...' }, { quoted: m });
         
         let api = await fetch(`https://api.agatz.xyz/api/tiktoksearch?message=${encodeURIComponent(text)}`);
         if (!api.ok) throw new Error(`API request failed with status ${api.status}`);
@@ -20,9 +20,9 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
         
         // Send video with caption
         await conn.sendFile(m.chat, no_watermark, 'tiktok_video.mp4', 
-            `📌 *${title || 'Video de TikTok'}*\n\n` +
-            `🔎 *Búsqueda:* ${text}\n` +
-            `🎵 *Música:* Se enviará aparte`, 
+            `「✦」 *${title || 'Video de TikTok'}*\n\n` +
+            `> ✦ *Búsqueda:* ${text}\n` +
+            `> 🜸 *Música:* Se enviará aparte`, 
             m);
             
         // Send audio if available
