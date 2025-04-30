@@ -19,7 +19,7 @@ let handler = async (m, { conn, usedPrefix, text, args, command }) => {
         vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:𓆩‌۫᷼ ִֶָღܾ݉͢𝕷͢𝖊𝖔፝֟፝֟፝֟፝֟፝֟፝֟𝖓𝖊𝖑ܾ݉ ִֶָ𓆪‌‹࣭݊𓂃ⷪ ִֶָ ᷫ‹ ⷭ.࣭𓆩‌۫᷼Ⴕ۫͜𓆪‌ \nitem1.TEL;waid=2348030943459:2348030943459\nitem1.X-ABLabel:Número\nitem2.EMAIL;type=INTERNET:ninopina10@gmail.com\nitem2.X-ABLabel:Email\nitem3.URL:https://www.instagram.com/crowbot_wa\nitem3.X-ABLabel:Internet\nitem4.ADR:;; Nicaragua;;;;\nitem4.X-ABLabel:Region\nEND:VCARD`,
     }];
 
-    const imageUrl = 'https://files.catbox.moe/k0kpaj.jpg';
+    const imageUrl = 'https://files.catbox.moe/tlz2zt.jpg';
 
     await conn.sendMessage(m.chat, {
         contacts: {
