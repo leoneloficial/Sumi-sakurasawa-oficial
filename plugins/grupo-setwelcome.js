@@ -15,8 +15,7 @@ let handler = async (m, { conn, text, isAdmin, isOwner }) => {
   m.reply(`✅ La bienvenida se ha actualizado correctamente:\n\n${preview}`);
 };
 
-// Función para manejar el evento de entrada al grupo (debe estar en otro archivo)
-/* Ejemplo de cómo debería manejarse el welcome real:
+/*
 async function onParticipantUpdate({ jid, participants, action }) {
   if (action === 'add') {
     const welcomeMsg = global.db.data.chats[jid]?.sWelcome || 'Bienvenid@ al grupo @user';
