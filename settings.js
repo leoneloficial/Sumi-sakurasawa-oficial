@@ -63,8 +63,8 @@ global.avatar = 'https://files.catbox.moe/a10h2o.jpg'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.gp1 = 'https://chat.whatsapp.com/CDw7hpI30WjCyKFAVLHNhZ'
-global.comunidad1 = 'https://chat.whatsapp.com/I0dMp2fEle7L6RaWBmwlAa'
+global.gp1 = 'https://chat.whatsapp.com/D9hmosKv0924sPqyXeu1CU'
+global.comunidad1 = 'https://chat.whatsapp.com/D9hmosKv0924sPqyXeu1CU'
 global.channel = 'https://whatsapp.com/channel/0029VbAc6cS002TEZ4r5261E'
 global.channel2 = 'https://whatsapp.com/channel/0029VbAc6cS002TEZ4r5261E'
 global.md = 'https://github.com/The-King-Destroy/Yuki_Suou-Bot'
