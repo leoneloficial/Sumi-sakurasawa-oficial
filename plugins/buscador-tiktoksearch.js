@@ -1,7 +1,7 @@
-import axios from 'axios'
+//import axios from 'axios'
 const {proto, generateWAMessageFromContent, prepareWAMessageMedia, generateWAMessageContent, getDevice} = (await import("@whiskeysockets/baileys")).default
 
-let handler = async (message, { conn, text, usedPrefix, command }) => {
+//let handler = async (message, { conn, text, usedPrefix, command }) => {
 if (!text) return conn.reply(message.chat, `${emoji} Por favor, ingrese lo que desea buscar en tiktok.`, message)
 async function createVideoMessage(url) {
 const { videoMessage } = await generateWAMessageContent({ video: { url } }, { upload: conn.waUploadToServer })
@@ -14,7 +14,7 @@ const j = Math.floor(Math.random() * (i + 1));
 }
 }
 try {
-await message.react(rwait)
+//await message.react(rwait)
 conn.reply(message.chat, `${emoji2} Descargando Su Video, espere un momento...`, message)
 let results = []
 let { data: response } = await axios.get('https://apis-starlights-team.koyeb.app/starlight/tiktoksearch?text=' + text)
