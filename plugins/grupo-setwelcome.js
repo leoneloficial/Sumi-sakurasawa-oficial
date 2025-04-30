@@ -1,16 +1,38 @@
-let handler = async (m, { conn, text, isAdmin, isOwner }) => {
-  
+let handler = async (m, { conn, text }) => {
+
   const defaultWelcome = 'Bienvenid@ al grupo @user';
   
   if (!text) {
     global.db.data.settings[conn.user.jid].welcome = defaultWelcome;
-    return m.reply(`${emoji} Se ha establecido la bienvenida predeterminada:\n\n${defaultWelcome.replace('@user', '@' + m.sender.split('@')[0])}`);
+    // Mensaje de confirmación con mención de prueba
+    const confirmation = `${emoji} Bienvenida establecida:\n\n${defaultWelcome.replace('@user', '@' + m.sender.split('@')[0])}`;
+    return conn.sendMessage(m.chat, { 
+      text: confirmation,
+      mentions: [m.sender]
+    }, { quoted: m });
   }
   
-  const fullWelcome = `${defaultWelcome}\n\n${text.trim()}`;
-  global.db.data.settings[conn.user.jid].welcome = fullWelcome;
+  const customWelcome = `${defaultWelcome}\n\n${text.trim()}`;
+  global.db.data.settings[conn.user.jid].welcome = customWelcome;
   
-  m.reply(`${emoji} La bienvenida se ha actualizado correctamente:\n\n${fullWelcome.replace('@user', '@' + m.sender.split('@')[0])}`);
+  const confirmation = `${emoji} Bienvenida personalizada establecida:\n\n${
+    customWelcome.replace('@user', '@' + m.sender.split('@')[0])
+  }`;
+  
+  await conn.sendMessage(m.chat, { 
+    text: confirmation,
+    mentions: [m.sender]
+  }, { quoted: m });
+};
+
+const sendWelcome = async (conn, chat, user) => {
+  const welcomeMsg = global.db.data.settings[conn.user.jid].welcome || 'Bienvenid@ al grupo @user';
+  const formattedMsg = welcomeMsg.replace('@user', '@' + user.split('@')[0]);
+  
+  await conn.sendMessage(chat, {
+    text: formattedMsg,
+    mentions: [user]
+  });
 };
 
 handler.help = ['setwelcome <texto>'];
@@ -20,4 +42,4 @@ handler.owner = false;
 handler.admin = true;
 handler.group = true;
 
-export default handler;
+export { handler, sendWelcome };
