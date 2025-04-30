@@ -1,13 +1,25 @@
-import { createCanvas } from 'canvas';
+import { createCanvas, registerFont } from 'canvas';
 import { readFile, unlink } from 'fs/promises';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 
-// For dynamic imports (like canvas loadImage which isn't exported directly)
+// For dynamic imports
 let loadImage;
 import('canvas').then(mod => {
   loadImage = mod.loadImage;
 });
+
+
+try {
+  registerFont(join(process.cwd(), 'fonts', 'NotoColorEmoji.ttf'), {
+    family: 'Noto Color Emoji'
+  });
+  registerFont(join(process.cwd(), 'fonts', 'NotoSans-Regular.ttf'), {
+    family: 'Noto Sans'
+  });
+} catch (e) {
+  console.log('No se encontraron fuentes personalizadas, usando fuentes por defecto');
+}
 
 const flagMap = [
   ['598', '🇺🇾'], ['595', '🇵🇾'], ['593', '🇪🇨'], ['591', '🇧🇴'],
@@ -63,6 +75,33 @@ const colores = {
   celeste: ['#00FFFF', '#E0FFFF']
 };
 
+// Función para dividir texto conservando emojis
+function splitTextWithEmojis(text, maxWidth, ctx) {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const metrics = ctx.measureText(testLine);
+    
+    if (metrics.width <= maxWidth) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      currentLine = word;
+    }
+  }
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines;
+}
+
 const handler = async (msg, { conn, args }) => {
   if (!loadImage) {
     const canvasModule = await import('canvas');
@@ -115,6 +154,9 @@ const handler = async (msg, { conn, args }) => {
   const canvas = createCanvas(1080, 1080);
   const draw = canvas.getContext('2d');
 
+  // Configurar fuentes (intentar usar Noto Color Emoji si está disponible)
+  const fontFamily = 'Noto Color Emoji, Noto Sans, Sans-serif';
+  
   const grad = draw.createLinearGradient(0, 0, 1080, 1080);
   grad.addColorStop(0, gradColors[0]);
   grad.addColorStop(1, gradColors[1]);
@@ -129,30 +171,23 @@ const handler = async (msg, { conn, args }) => {
   draw.drawImage(avatar, 20, 20, 160, 160);
   draw.restore();
 
-  draw.font = 'bold 40px Sans-serif';
+  // Nombre con emojis
+  draw.font = `bold 40px ${fontFamily}`;
   draw.fillStyle = '#ffffff';
+  draw.textAlign = 'left';
   draw.fillText(displayName, 220, 100);
 
-  draw.font = 'bold 60px Sans-serif';
+  // Texto principal con emojis
+  draw.font = `bold 60px ${fontFamily}`;
   draw.fillStyle = '#ffffff';
   draw.textAlign = 'center';
 
-  const words = content.split(' ');
-  let line = '', lines = [];
-  for (const word of words) {
-    const testLine = line + word + ' ';
-    if (draw.measureText(testLine).width > 900) {
-      lines.push(line.trim());
-      line = word + ' ';
-    } else {
-      line = testLine;
-    }
-  }
-  if (line.trim()) lines.push(line.trim());
+  // Usar nuestra función mejorada para dividir texto
+  const lines = splitTextWithEmojis(content, 900, draw);
 
   const startY = 550 - (lines.length * 35);
-  lines.forEach((l, i) => {
-    draw.fillText(l, 540, startY + (i * 80));
+  lines.forEach((line, i) => {
+    draw.fillText(line, 540, startY + (i * 80));
   });
 
   const logo = await loadImage('https://files.catbox.moe/2oxo4b.jpg');
