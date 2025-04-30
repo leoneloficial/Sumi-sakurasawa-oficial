@@ -39,7 +39,6 @@ handler.help = ['setwelcome <texto>'];
 handler.tags = ['group'];
 handler.command = ['setwelcome'];
 handler.owner = false;
-handler.admin = true;
 handler.group = true;
 
 export { handler, sendWelcome };
