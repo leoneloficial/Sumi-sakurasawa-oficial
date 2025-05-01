@@ -10,7 +10,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
     global.welcom2 = bot.bye || global.welcomm2 || "¡Adiós! Esperamos verte pronto.";
 
     let redes = "";
-    let dev = "Leonel"; 
+    let dev = "=͟͟͞❀ sᥙmі - sᥲkᥙrᥲsᥲᥕᥲ  ⏤͟͟͞͞★"; 
 
     if (!m.messageStubType || !m.isGroup) return !0;
     
