@@ -17,8 +17,8 @@ let redes = ""
   let pp = bot.logo.welcome || await conn.profilePictureUrl(m.messageStubParameters[0], 'image').catch(_ => 'https://files.catbox.moe/un7lt7.jpg')
   let img = await (await fetch(`${pp}`)).buffer()
   let chat = global.db.data.chats[m.chat]
-  let txt = '❀⏤͟͟͞͞BIENVENIDO‹࣭݊𓂃ⷪ ִֶָ ᷫ‹ ⷭ.࣭𓆩‌۫᷼Ⴕ۫͜𓆪‌'
-  let txt1 = '❀⏤͟͟͞͞ADIOS‹࣭݊𓂃ⷪ ִֶָ ᷫ‹ ⷭ.࣭𓆩‌۫᷼Ⴕ۫͜𓆪‌'
+  let txt = '⬪࣪ꥈ𑁍⃪࣭۪ٜ݊݊݊݊݊໑ٜ࣪𝘽𝙄𝙀𝙉𝙑𝙀𝙉𝙄𝘿@⃪࣭۪ٜ݊݊݊݊𑁍ꥈ࣪⬪'
+  let txt1 = '⬪࣪ꥈ𑁍⃪࣭۪ٜ݊݊݊݊݊໑ٜ࣪𝘼𝘿𝙄𝙊𝙎𑁍ꥈ࣪⬪' '
   let groupSize = participants.length
   if (m.messageStubType == 27) {
     groupSize++;
