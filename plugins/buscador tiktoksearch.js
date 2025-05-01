@@ -1,10 +1,12 @@
 import fetch from 'node-fetch';
 
 let handler = async (m, { conn, command, text, usedPrefix }) => {
-    if (!text) return conn.reply(m.chat, `❀ Ingresa el texto de lo que quieres buscar`, m);
+    if (!text) {
+        await conn.reply(m.chat, `❀ Ingresa el texto de lo que quieres buscar`, m);
+        return;
+    }
     
     try {
-        // Show loading indicator
         let loadingMsg = await conn.sendMessage(m.chat, { text: '❀ Buscando en TikTok...' }, { quoted: m });
         
         let api = await fetch(`https://api.agatz.xyz/api/tiktoksearch?message=${encodeURIComponent(text)}`);
@@ -15,24 +17,21 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
         
         let { title, no_watermark, music } = json.data;
         
-        // Delete loading message
         await conn.sendMessage(m.chat, { delete: loadingMsg.key });
         
-        // Send video with caption
         await conn.sendFile(m.chat, no_watermark, 'tiktok_video.mp4', 
             `「✦」 *${title || 'Video de TikTok'}*\n\n` +
             `> ✦ *Búsqueda:* ${text}\n` +
             `> 🜸 *Música:* Se enviará aparte`, 
             m);
             
-        // Send audio if available
         if (music) {
-            await conn.sendFile(m.chat, music, 'tiktok_music.mp3', null, m, null, { mimetype: 'audio/mp4' });
+            await conn.sendFile(m.chat, music, 'tiktok_music.mp3', null, m, true, { mimetype: 'audio/mp4' });
         }
         
     } catch (error) {
         console.error('TikTok Search Error:', error);
-        conn.reply(m.chat, 
+        await conn.reply(m.chat, 
             `❌ Error al buscar en TikTok\n` +
             `🔹 Intenta nuevamente más tarde\n` +
             `🔹 O usa otro término de búsqueda`, 
