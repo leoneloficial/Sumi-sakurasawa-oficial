@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 let handler = async (m, { conn, command, text, usedPrefix }) => {
     if (!text) {
         await conn.reply(m.chat, `❀ Ingresa el texto de lo que quieres buscar`, m);
-        return;
+        return; 
     }
     
     try {
